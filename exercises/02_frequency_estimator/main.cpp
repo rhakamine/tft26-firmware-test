@@ -20,10 +20,10 @@
 
 int main() {
     trac_fw_io_t io;
-    const uint32_t period_sampling_ms = 10;
+    const uint32_t period_sampling_ms = 5;
 
-    int n_points = 100;
-    int n_points_for_average = 5;
+    int n_points = 500;
+    int n_points_for_average = 10;
     int n_filtered_points = n_points - n_points_for_average + 1;
 
     double points[n_points];
@@ -82,6 +82,6 @@ int main() {
             counter = 0;
         }
         io.write_reg(3, frequency * 100.0);
-        io.delay(10);
+        io.delay(5);
     }
 }
