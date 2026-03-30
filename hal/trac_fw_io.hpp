@@ -23,6 +23,23 @@
 #include <cstdint>
 #include <functional>
 
+#define TMP64_ADDRESS 0x48
+#define REG_WHO_AM_I 0x0F
+#define TMP_MSB 0x00
+#define TMP_B2  0x01
+#define TMP_B1  0x02
+#define TMP_LSB 0x03
+
+#define HMD_MSB 0x00
+#define HMD_B2  0x01
+#define HMD_B1  0x02
+#define HMD_LSB 0x03
+
+
+#define SCL 8
+#define SDA 9
+#define DELAY 1
+
 // Trigger modes for attach_interrupt().
 enum class InterruptMode { RISING, FALLING, CHANGE };
 
@@ -72,7 +89,99 @@ public:
                           InterruptMode mode);
     void detach_interrupt(uint8_t port);
 
+    void i2c_start()
+    {
+        this->digital_write(SCL, 1);
+        this->digital_write(SDA, 1);
+        this->delay(DELAY);
+        this->digital_write(SDA, 0);
+        this->delay(DELAY);
+        this->digital_write(SCL, 0);
+        this->delay(DELAY);
+    }
+
+    void i2c_stop()
+    {
+        this->digital_write(SDA, 0);
+        this->delay(DELAY);
+        this->digital_write(SCL, 1);
+        this->delay(DELAY);
+        this->digital_write(SDA, 1);
+        this->delay(DELAY);
+    }
+
+    uint8_t i2c_write_byte (uint8_t data)
+    {
+        uint8_t bit;
+        uint8_t ack;
+        for (bit = 0; bit < 8; bit++)
+        {
+            if (data & 0x80)
+            {
+                this->digital_write(SDA, 1);
+            }
+            else
+            {
+                this->digital_write(SDA, 0);
+            }
+            data <<= 1;
+
+            this->delay(DELAY);
+            this->digital_write(SCL, 1);
+            this->delay(DELAY);
+            this->digital_write(SCL, 0);
+        }
+        this->digital_write(SDA, 1);
+        this->delay(DELAY);
+        this->digital_write(SCL, 1);
+        this->delay(DELAY);
+
+        ack = this->digital_read(SDA);
+
+        this->digital_write(SCL, 0);
+        this->delay(DELAY);
+        return ack;
+    }
+
+    uint8_t i2c_read_byte(uint8_t ack)
+    {
+        uint8_t data = 0;
+        uint8_t bit;
+
+        for (bit = 0; bit < 8; bit++)
+        {
+            data <<= 1;
+            this->digital_write(SCL, 1);
+            this->delay(DELAY);
+
+            data |= this->digital_read(SDA);
+
+            this->digital_write(SCL, 0);
+            this->delay(DELAY);
+        }
+
+        if (ack)
+        {
+            this->digital_write(SDA, 0);
+        }
+        else
+        {
+            this->digital_write(SDA, 1);
+        }
+
+        this->delay(DELAY);
+        this->digital_write(SCL, 1);
+        this->delay(DELAY);
+        this->digital_write(SCL, 0);
+        this->delay(DELAY);
+
+        this->digital_write(SDA, 1);
+        this->delay(DELAY);
+        return data;
+    }
+
 private:
     struct _hw_t;   // opaque — implementation detail
     _hw_t* _hw;
+
 };
