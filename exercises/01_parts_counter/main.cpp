@@ -30,6 +30,13 @@ typedef enum state {
 } state_t;
 
 
+/**
+ * For this exercise, a state machine approach was used so it is easier
+ * to follow when the program is detecting an object or not, also helps to
+ * prevent double counting by enabling parameters for adjustment of when
+ * the sensor is detecting an object, and when it is not detecting it anymore
+ * so we can count it.
+ */
 int main() {
     trac_fw_io_t io;
 

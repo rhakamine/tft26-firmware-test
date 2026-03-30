@@ -18,12 +18,24 @@
 #include <cstdint>
 
 
+/**
+ * For this exercise, an approach cosinsting of sampling the analog data, filtering
+ * the data by calculating a moving average to reduce noise and verifying how many times
+ * the sine signal crossed its middle line from bottom to up was used. With this, we
+ * essentialy counted how many wave forms were sampled, and knowing the sampling period
+ * we can calculate the estimated frequency of the signal.
+ *
+ * By the example, frequencies from 6Hz to 9Hz were used, so we can use any period
+ * for sampling that has a frequency of 18Hz or higher, due to the Nyquist frequency.
+ * For the estimate to converge within 1 second, the amount of data points and period
+ * sampling need to result in less then 1 second of sampling.
+ */
 int main() {
     trac_fw_io_t io;
     const uint32_t period_sampling_ms = 5;
 
-    int n_points = 500;
-    int n_points_for_average = 10;
+    int n_points = 200;
+    int n_points_for_average = 5;
     int n_filtered_points = n_points - n_points_for_average + 1;
 
     double points[n_points];
@@ -35,6 +47,7 @@ int main() {
     uint32_t start_time = io.millis();
 
     while (true) {
+        // Sampling
         uint32_t delta = io.millis() - start_time;
         if (delta >= period_sampling_ms)
         {
@@ -43,6 +56,7 @@ int main() {
         }
 
         counter++;
+        // Process
         if (counter >= n_points) 
         {
             double acc = 0.0;
@@ -76,7 +90,7 @@ int main() {
                 }
             }
 
-            double duration = (double)n_filtered_points * period_sampling_ms / 1000.0;
+            double duration = (double)n_points * period_sampling_ms / 1000.0;
 
             frequency = (double)zero_crossings / duration;
             counter = 0;

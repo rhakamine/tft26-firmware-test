@@ -34,6 +34,11 @@
 #include <cstring>
 
 
+/**
+ * For the "merry-go-round" display of the data, the io.millis() was used
+ * together with the count of how many humidity sensors were found, displaying
+ * each of its value by (1 second / (number of humidity sensors)) second 
+ */
 int main() {
     trac_fw_io_t io;
 
